@@ -1,6 +1,6 @@
 
 var rework = require('rework')
-  , inline = require('../')
+  , at2x = require('../')
   , fs = require('fs')
   , assert = require('assert')
   , read = fs.readFileSync;
@@ -12,7 +12,7 @@ function fixture(name) {
 describe('.at2x()', function(){
   it('should add device-pixel-ratio rules', function(){
     rework(fixture('at2x'))
-      .use(rework.at2x())
+      .use(at2x())
       .toString()
       .should.equal(fixture('at2x.out'));
   })
