@@ -20,7 +20,7 @@ var query = [
   '(min-device-pixel-ratio: 1.5)',
   '(min-resolution: 144dpi)',
   '(min-resolution: 1.5dppx)'
-].join(', ');
+];
 
 /**
  * Translate
@@ -77,7 +77,7 @@ module.exports = function() {
         // wrap in @media
         style.rules.push({
           type: 'media',
-          media: (basequery ? basequery + ', ' : '') + query,
+          media: (basequery ? combineMediaQuery(basequery.split(/,\s*/), query) : query.join(', ')),
           rules: [
             {
               type: 'rule',
@@ -101,6 +101,20 @@ module.exports = function() {
     });
   };
 };
+
+
+/**
+ * Combines existing media query with 2x media query.
+ */
+function combineMediaQuery(base, additional) {
+  var finalQuery = [];
+  base.forEach(function(b) {
+    additional.forEach(function(a) {
+      finalQuery.push(b + ' and ' + a);
+    });
+  });
+  return finalQuery.join(', ');
+}
 
 /**
  * Filter background[-image] with url().
