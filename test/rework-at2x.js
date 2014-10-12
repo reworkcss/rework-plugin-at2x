@@ -3,7 +3,8 @@ var rework = require('rework')
   , at2x = require('../')
   , fs = require('fs')
   , assert = require('assert')
-  , read = fs.readFileSync;
+  , read = fs.readFileSync
+  , should = require('should');
 
 function fixture(name) {
   return read('test/fixtures/' + name + '.css', 'utf8').trim();
