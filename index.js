@@ -4,6 +4,8 @@
  */
 
 var path = require('path');
+var urls = require('url');
+var imagesize = require('image-size');
 var stripQuotes = function(str) {
   if ('"' == str[0] || "'" == str[0]) return str.slice(1, -1);
   return str;
@@ -44,7 +46,9 @@ var query = [
  *
  */
 
-module.exports = function() {
+module.exports = function(opts) {
+  opts = opts || {};
+
   return function(style){
     var basequery;
     style.rules.forEach(function translate(rule){
@@ -67,12 +71,30 @@ module.exports = function() {
         var i = val.indexOf('url(');
         var url = stripQuotes(val.slice(i + 4, val.indexOf(')', i)));
         var ext = path.extname(url);
+        var isLocalFile = url.search(/http[s]?/i) !== 0;
 
         // ignore .svg
         if ('.svg' == ext) return;
 
         // @2x value
-        url = path.join(path.dirname(url), path.basename(url, ext) + '@2x' + ext);
+        if (isLocalFile) {
+          url = appendRetinaSuffix(url, ext);
+        } else {
+          var parsed = urls.parse(url);
+          parsed.pathname = appendRetinaSuffix(parsed.pathname, ext);
+          url = urls.format(parsed);
+        }
+
+        // If no size defined and file is local (no http/https/relative protocol),
+        // try to get it from the image
+        if (backgroundSize === 'contain' && isLocalFile) {
+          var loc = opts.baseDir ? path.join(opts.baseDir, url) : url;
+
+          var result = imagesize(loc);
+          var width = result.width === 1 ? 1 : Math.floor(result.width / 2);
+          var height = result.height === 1 ? 1 : Math.floor(result.height / 2);
+          backgroundSize = width + 'px ' + height + 'px';
+        }
 
         // wrap in @media
         style.rules.push({
@@ -114,6 +136,13 @@ function combineMediaQuery(base, additional) {
     });
   });
   return finalQuery.join(', ');
+}
+
+/**
+ * Append default retina suffix (@2x) to a path
+ */
+function appendRetinaSuffix(url, ext) {
+  return path.join(path.dirname(url), path.basename(url, ext) + '@2x' + ext);
 }
 
 /**
