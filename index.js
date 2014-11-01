@@ -70,6 +70,7 @@ module.exports = function() {
 
         // ignore .svg
         if ('.svg' == ext) return;
+        if ('.svgz' == ext) return;
 
         // @2x value
         url = path.join(path.dirname(url), path.basename(url, ext) + '@2x' + ext);
